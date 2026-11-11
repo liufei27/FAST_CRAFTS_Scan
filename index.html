@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAST · CRAFTS 漂移扫描三维演示</title>
+<style>
+  :root{
+    --bg:#05080f; --panel:rgba(10,18,28,.88); --line:rgba(120,170,200,.16);
+    --txt:#dce8f2; --dim:#8fa6b8; --accent:#ffc966; --accent2:#35d0c8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    overflow:hidden;-webkit-font-smoothing:antialiased}
+  canvas#gl{display:block;position:fixed;inset:0}
+
+  /* ---------- 左侧控制面板 ---------- */
+  #panel{
+    position:fixed;left:14px;top:14px;bottom:14px;width:296px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    padding:14px 14px 10px;overflow-y:auto;font-size:12.5px;z-index:10;
+    scrollbar-width:thin;scrollbar-color:rgba(120,170,200,.3) transparent;
+  }
+  #panel::-webkit-scrollbar{width:6px}
+  #panel::-webkit-scrollbar-thumb{background:rgba(120,170,200,.28);border-radius:3px}
+  #panel.collapsed{width:auto;bottom:auto;padding:10px 12px}
+  #panel.collapsed .body{display:none}
+  /* 标题：字体/字号/字距对齐 CRAFTS-Pulsar 的 .brand-kicker（Times New Roman 12px / .22em） */
+  h1{font-family:"Times New Roman",Times,-apple-system,"SF Pro SC","PingFang SC",
+      "Helvetica Neue","Microsoft YaHei",system-ui,sans-serif;
+    font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    line-height:1.45;margin:0 0 10px;color:#c9dae8;white-space:nowrap}
+  h1 a{color:inherit;text-decoration:none;transition:color .15s}
+  h1 a:hover,h1 a:focus-visible{color:#a9f7ee;outline:none}
+  h1 a.accent{color:#3fded0}
+  h1 a.accent:hover,h1 a.accent:focus-visible{color:#b6fff6}
+  h1 .sep{opacity:.55}
+  .sec{margin:12px 0 6px;font-size:10.5px;letter-spacing:1.2px;color:var(--accent2);
+    text-transform:uppercase;opacity:.9;border-top:1px solid var(--line);padding-top:9px}
+  .sec:first-of-type{border-top:none}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0}
+  .row label{color:var(--dim);font-size:11.5px;white-space:nowrap}
+  .row .val{font-family:"SF Mono",Menlo,monospace;font-size:11px;color:var(--txt);
+    min-width:64px;text-align:right}
+  input[type=range]{-webkit-appearance:none;width:100%;height:20px;background:transparent;
+    margin:2px 0 6px}
+  input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;
+    background:linear-gradient(90deg,rgba(53,208,200,.55),rgba(120,170,200,.22))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;
+    border-radius:50%;background:var(--accent);margin-top:-4.5px;cursor:pointer;
+    box-shadow:0 0 6px rgba(255,201,102,.6)}
+  button{background:rgba(255,255,255,.05);color:var(--txt);border:1px solid var(--line);
+    border-radius:8px;padding:6px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;
+    transition:.15s}
+  button:hover{background:rgba(255,255,255,.1);border-color:rgba(120,170,200,.4)}
+  button.active{background:rgba(255,201,102,.16);border-color:rgba(255,201,102,.5);
+    color:#ffe0a8}
+  .btns{display:flex;gap:6px;flex-wrap:wrap}
+  .btns button{flex:1;min-width:74px}
+  .chk{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:11.5px;
+    cursor:pointer;padding:3px 0}
+  .chk input{accent-color:#35d0c8;width:13px;height:13px}
+  .cnt{color:#5e7c93;font-size:10px;font-family:"SF Mono",Menlo,monospace;
+    margin-left:auto;padding-right:2px}
+  .chk.wide{grid-column:1/-1}
+  .chk .lbl{white-space:nowrap}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px}
+
+  /* ---------- 底部 HUD ---------- */
+  #hud{position:fixed;left:326px;bottom:14px;z-index:9;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:10px 14px;font-size:11.5px;backdrop-filter:blur(14px);
+    display:flex;gap:18px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 640px)}
+  #hud .k{color:var(--dim);font-size:10px;letter-spacing:.5px;display:block}
+  #hud .segwrap .k{display:inline}
+  #hud .v{font-family:"SF Mono",Menlo,monospace;font-size:13px;color:var(--txt)}
+  .badge{padding:3px 8px;border-radius:20px;font-size:10.5px;border:1px solid}
+  .badge.ok{color:#7ee6a8;border-color:rgba(126,230,168,.4);background:rgba(126,230,168,.08)}
+  .badge.bad{color:#ff9a76;border-color:rgba(255,154,118,.4);background:rgba(255,154,118,.08)}
+  .badge.warn{color:#ffc966;border-color:rgba(255,201,102,.45);background:rgba(255,201,102,.10)}
+  .segwrap{display:flex;align-items:center;gap:7px}
+  .segwrap .k{color:var(--dim);font-size:10px;letter-spacing:.5px}
+  .seg{display:flex;border:1px solid rgba(120,170,200,.22);border-radius:20px;overflow:hidden}
+  .seg button{background:transparent;border:none;color:#7f97a9;font-size:11px;
+    padding:4px 9px;cursor:pointer;font-family:inherit;transition:.15s;border-radius:0;
+    font-family:"SF Mono",Menlo,monospace}
+  .seg button + button{border-left:1px solid rgba(120,170,200,.18)}
+  .seg button:hover{background:rgba(255,255,255,.06);color:#cfe0ee}
+  .seg button.active{background:rgba(255,201,102,.18);color:#ffd98f;font-weight:600}
+  .segcur{font-family:"SF Mono",Menlo,monospace;font-size:11px;color:#7f97a9}
+
+  /* ---------- 寻星图 ---------- */
+  #finderWrap{position:fixed;right:14px;bottom:14px;z-index:9;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:8px;backdrop-filter:blur(14px)}
+  #finderWrap .cap{font-size:10px;color:var(--dim);margin:2px 0 4px 2px;letter-spacing:.5px}
+  #finder{display:block;border-radius:8px;background:rgba(4,10,18,.85)}
+  .internal{margin-top:6px;font-size:9.5px;color:#ff9a76;letter-spacing:.6px;text-align:center;
+    border:1px solid rgba(255,154,118,.25);border-radius:6px;padding:2px 0;
+    background:rgba(255,154,118,.06)}
+
+  /* ---------- 右上角说明 ---------- */
+  #about{position:fixed;right:14px;top:14px;z-index:9;max-width:330px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;font-size:11px;color:var(--dim);line-height:1.6;
+    max-height:calc(100vh - 28px);overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:rgba(120,170,200,.3) transparent;
+    backdrop-filter:blur(14px);display:none}
+  #about.show{display:block}
+  #about b{color:var(--txt);font-weight:600}
+  #aboutBtn{position:fixed;right:14px;top:14px;z-index:11;
+    font-size:17.25px;padding:8px 15px;line-height:1.1}
+  #about.show ~ #aboutBtn{display:none}
+  .kbd{font-family:"SF Mono",Menlo,monospace;background:rgba(255,255,255,.08);
+    padding:1px 4px;border-radius:3px;font-size:10px}
+  @media(max-width:1180px){
+    #finderWrap{display:none}
+    #hud{max-width:calc(100vw - 340px)}
+  }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<!-- ============ 控制面板 ============ -->
+<div id="panel">
+  <h1>
+    <a href="https://fast.bao.ac.cn/" target="_blank" rel="noopener noreferrer"
+       title="FAST 官网 · fast.bao.ac.cn">FAST</a><span class="sep"> · </span><a
+       href="https://groups.bao.ac.cn/ism/" target="_blank" rel="noopener noreferrer"
+       title="CRAFTS 官网 · groups.bao.ac.cn/ism" class="accent">CRAFTS</a>
+  </h1>
+
+  <div class="body">
+    <div class="sec">时间</div>
+    <div class="row">
+      <button id="btnPlay" class="active" style="flex:1">⏸ 暂停</button>
+      <span class="val" id="speedVal">600×</span>
+    </div>
+    <input type="range" id="speed" min="0" max="3.8" step="0.02" value="2.78">
+    <div class="row">
+      <label>UTC</label>
+      <input type="datetime-local" id="timeInput" step="1" style="
+        background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt);
+        border-radius:6px;padding:3px 6px;font-size:11px;font-family:inherit;width:172px">
+    </div>
+
+    <div class="sec">观测设置</div>
+    <div class="row"><label>基准赤纬 δ₀</label><span class="val" id="decBaseVal">30.0°</span></div>
+    <input type="range" id="decBase" min="-14.4" max="65.6" step="0.1" value="30">
+    <div class="row"><label>观测日 n（+21.67′/日）</label><span class="val" id="dayVal">0</span></div>
+    <input type="range" id="day" min="-20" max="20" step="1" value="0">
+    <label class="chk"><input type="checkbox" id="rotOn" checked>19 束阵列旋转（CRAFTS）</label>
+    <div class="row"><label>旋转角</label><span class="val" id="rotVal">23.4°</span></div>
+    <input type="range" id="rot" min="0" max="60" step="0.1" value="23.4">
+    <div class="row"><label>观测频率</label><span class="val" id="freqVal">1420 MHz</span></div>
+    <input type="range" id="freq" min="1050" max="1450" step="5" value="1420">
+
+    <div class="sec">视角</div>
+    <div class="btns">
+      <button data-view="overview" class="active">全景</button>
+      <button data-view="feed">馈源舱仰视</button>
+      <button data-view="sky">天球俯视</button>
+      <button data-view="section">剖面</button>
+      <button data-view="beams">轴向俯视</button>
+    </div>
+
+    <div class="sec">显示</div>
+    <div class="grid2">
+      <label class="chk"><input type="checkbox" id="t_traj" checked>扫描拖尾 5h</label>
+      <label class="chk"><input type="checkbox" id="t_band">多日条带</label>
+      <label class="chk"><input type="checkbox" id="t_grid" checked>赤道网格</label>
+      <label class="chk"><input type="checkbox" id="t_wire" checked>反射面网格</label>
+      <label class="chk"><input type="checkbox" id="t_cables" checked>索缆</label>
+      <label class="chk"><input type="checkbox" id="t_stars" checked>恒星</label>
+      <label class="chk wide"><input type="checkbox" id="t_atnf" checked>
+        <span class="lbl">ATNF 脉冲星</span><span class="cnt" id="cntATNF"></span></label>
+      <label class="chk wide"><input type="checkbox" id="t_crafts" checked>
+        <span class="lbl">CRAFTS 脉冲星</span><span class="cnt" id="cntCRAFTS"></span></label>
+      <label class="chk"><input type="checkbox" id="t_labels" checked>束编号</label>
+    </div>
+
+    <div class="sec">面形与波束</div>
+    <div class="row"><label>主动变形 球面→抛物面</label><span class="val" id="deformVal">100%</span></div>
+    <input type="range" id="deform" min="0" max="1" step="0.01" value="1">
+    <div class="row"><label>波束足印放大</label><span class="val" id="magVal">×3</span></div>
+    <input type="range" id="mag" min="1" max="30" step="1" value="3">
+    <div class="row"><label>角尺度放大 k <span style="opacity:.6">(示意)</span></label>
+      <span class="val" id="arrayMagVal">×40</span></div>
+    <input type="range" id="arrayMag" min="1" max="120" step="1" value="40">
+
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud">
+  <div><span class="k">UTC</span><span class="v" id="hudUTC">—</span></div>
+  <div><span class="k">LST</span><span class="v" id="hudLST">—</span></div>
+  <div><span class="k">观测赤纬</span><span class="v" id="hudDec">—</span></div>
+  <div><span class="k">天顶角</span><span class="v" id="hudZA">—</span></div>
+  <div><span class="k">方位角</span><span class="v" id="hudAz">—</span></div>
+  <div><span class="k">M01 赤经</span><span class="v" id="hudRA">—</span></div>
+  <div><span class="k">效率</span><span class="v" id="hudEta">—</span></div>
+  <div><span class="k">增益</span><span class="v" id="hudGain">—</span></div>
+  <div><span class="k">视场</span><span class="v" id="hudFov">—</span></div>
+  <div class="segwrap">
+    <span class="k">角尺度</span>
+    <div class="seg" id="magSeg" title="×1 = 真实角尺度（束宽 3′、阵列 25′，几不可见）；×40 = 放大 40 倍便于观察，相对几何不变">
+      <button data-mag="1">×1</button>
+      <button data-mag="40">×40</button>
+    </div>
+    <span class="segcur" id="magCur"></span>
+  </div>
+  <div><span class="badge ok" id="visBadge">—</span></div>
+</div>
+
+<!-- ============ 寻星图 ============ -->
+<div id="finderWrap">
+  <div class="cap">FAST 19波束的波束响应分布·1420MHz</div>
+  <canvas id="finder" width="212" height="212"></canvas>
+  <div class="cap" style="margin-top:6px">点源穿越光变曲线（合成）</div>
+  <canvas id="transit" width="212" height="92"
+          style="display:block;border-radius:8px;background:rgba(4,10,18,.85)"></canvas>
+  <div class="internal">内部数据 · 请勿外传</div>
+</div>
+
+<!-- ============ 说明 ============ -->
+<div id="about">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <b style="font-size:12px">模型说明与近似</b>
+    <button onclick="document.getElementById('about').classList.remove('show')"
+            style="padding:2px 7px">×</button>
+  </div>
+  <b>物理图像</b>：漂移扫描时望远镜<b>不动</b>，是天空从天顶附近穿过固定的 19 束。
+  因此波束足印画在地平坐标里（静止），轨迹是赤道系中的等赤纬小圆（随天球转）。<br><br>
+  <b>几何</b>：球面 R=300 m；工作抛物面 f=138.63 m（f/R=0.4621），照明口径 300 m；
+  馈源舱位于球心下方 161.4 m 的焦面上（实测焦面半径 162.15 m）。<br><br>
+  <b>束位置</b>：Jiang et al. 2020 四历元实测均值（arcmin），已与 Chen et al. 2025
+  独立比对，最大差 0.31′。<br><br>
+  <b>可观测天区</b>：FAST 最大天顶角 40°，在纬度 25.65° 处等价于赤纬 −14.4° ~ +65.6°。
+  天球上那两条青色虚线圆就是这两条边界；把「观测日」或「基准赤纬」推出界外时，
+  底部徽标会变红并显示「限幅」。<br><br>
+  <b>扫描拖尾</b>：每条带是该束过去 5 小时扫过的天区，起点（t0）就是该束当前足印，
+  宽度取该束 FWHM（≈3′，随角尺度 k 同步放大）。t0 不透明，t0−5h 完全透明，中间线性渐隐。<br><br>
+  <span id="noteBeamMeasured"><b>波束响应</b>：19 束二维响应图取自 Chen et al. 2025 作者提供的实测数据
+  （49×49，0.5′/像素，跨度 24.5′，K/Jy）。<b style="color:#ff9a76">
+  该数据为内部资料，请勿外传。</b></span><span id="noteBeamPublic" style="display:none">
+  <b>波束响应</b>：本公开版未包含实测方向图，19 束以高斯模型近似（FWHM 2.9′，随频率 1/ν 缩放）。</span><br><br>
+  <b>已知近似</b>：忽略岁差对演示坐标的影响（恒星表 J2000 已按观测日期岁差改正）；
+  大气折射、章动、光行差未建模（合计 &lt; 20″，远小于 3′ 束宽）；
+  波束足印大小按 FWHM×放大倍数绘制，非实测方向图；地形与塔基高度为示意。<br><br>
+  <b>快捷键</b>：<span class="kbd">空格</span> 播放/暂停 ·
+  <span class="kbd">1</span>–<span class="kbd">5</span> 切换视角
+</div>
+
+<button id="aboutBtn" onclick="document.getElementById('about').classList.add('show')">说明</button>
+
+<script>
+window.addEventListener('error', function(e){
+  var d=document.createElement('pre'); d.id='err';
+  d.style.cssText='position:fixed;z-index:99;left:0;top:0;margin:0;color:#ff8a8a;background:#12040a;padding:8px;font-size:11px;white-space:pre-wrap;max-width:100vw';
+  d.textContent='JS ERROR: '+e.message+'\n'+e.filename+':'+e.lineno+'\n'+((e.error&&e.error.stack)||'');
+  document.body.appendChild(d); document.title='ERR';
+});
+</script>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="js/pulsars_data.js"></script>
+<script src="js/astro.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
