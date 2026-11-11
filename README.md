@@ -3,7 +3,7 @@
 FAST（500 米口径球面射电望远镜）19 波束 CRAFTS 漂移扫描的可交互三维演示。
 浏览器直接打开 `index.html` 即可，**纯静态、无外部依赖、不发任何网络请求**（three.js 已随仓库分发）。
 
-在线版：https://liufei27.github.io/FAST_CRAFTS_3D/
+在线版：https://liufei27.github.io/FAST_CRAFTS_Scan/
 
 ## 看点
 
