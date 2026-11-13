@@ -80,6 +80,7 @@
     applyUrlState();
     syncLabels();
     applyDataMode();
+    applyProjectionShift();
     refreshAll();
     if (new URLSearchParams(location.search).get('debug')) {
       var pre = document.createElement('pre');
@@ -1115,7 +1116,7 @@
       target = dv.clone().multiplyScalar(650);
       setArrayMag(40, false);
     }
-    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; applyProjectionShift(); }
     tweenCamera(pos, target, up, 800);
   }
 
@@ -1291,11 +1292,26 @@
     if (caps[1]) caps[1].style.display = has ? '' : 'none';
   }
 
+  // 左栏占据左侧，3D 画布仍铺满全窗；通过投影矩阵的水平偏移（移轴）
+  // 把画面内容右移 pw/2，使场景落在"去掉左栏后"的可视区中心
+  function applyProjectionShift() {
+    camera.updateProjectionMatrix();
+    var panel = document.getElementById('panel');
+    var pw = panel ? panel.getBoundingClientRect().right : 0;
+    var W = window.innerWidth || 1;
+    // 要把内容右移 pw/2 像素（NDC 为 s = pw/W）：x_ndc = m00·x/(-z) − m02
+    // 同时把水平尺度乘 (1−s)，否则右移后右侧会被裁掉
+    var s2 = pw / W;
+    camera.projectionMatrix.elements[0] *= (1 - s2);
+    camera.projectionMatrix.elements[8] = -s2;
+    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+  }
+
   function bindResize() {
     window.addEventListener('resize', function () {
       camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      applyProjectionShift();
     });
   }
 
