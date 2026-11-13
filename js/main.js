@@ -903,7 +903,9 @@
         '° 处对应赤纬 ' + S.decMin.toFixed(1) + '° ~ +' + S.decMax.toFixed(1) + '°';
     }
     var ti = document.getElementById('timeInput');
-    if (ti && document.activeElement !== ti) ti.value = d.toISOString().slice(0, 19);
+    if (ti && document.activeElement !== ti) {
+      ti.value = d.toISOString().slice(0, 19).replace('T', ' ');
+    }
   }
 
   function setText(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
@@ -1226,8 +1228,18 @@
       });
     });
     $('timeInput').addEventListener('change', function () {
-      var ms = Date.parse(this.value.length <= 16 ? this.value + ':00Z' : this.value + 'Z');
+      var raw = this.value.trim();
+      if (!raw) { updateHUD(); return; }
+      var v = raw.replace(' ', 'T');
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) v += 'T00:00:00';        // 只给日期
+      else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v)) v += ':00';  // 缺秒
+      if (!/[Zz]|[+-]\d{2}:?\d{2}$/.test(v)) v += 'Z';     // 默认按 UTC 解释
+      var ms = Date.parse(v);
       if (!isNaN(ms)) { state.utcMs = ms; refreshAll(); }
+      else { updateHUD(); }                                  // 非法输入则恢复原值
+    });
+    $('timeInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { this.blur(); }
     });
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT') return;

@@ -142,9 +142,11 @@
     <input type="range" id="speed" min="0" max="3.8" step="0.02" value="2.78">
     <div class="row">
       <label>UTC</label>
-      <input type="datetime-local" id="timeInput" step="1" style="
-        background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt);
-        border-radius:6px;padding:3px 6px;font-size:11px;font-family:inherit;width:172px">
+      <input type="text" id="timeInput" spellcheck="false" autocomplete="off"
+        placeholder="YYYY-MM-DD HH:MM:SS" title="UTC 时间，格式 YYYY-MM-DD HH:MM:SS"
+        style="background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt);
+        border-radius:6px;padding:4px 7px;font-size:12px;width:176px;
+        font-family:'SF Mono',Menlo,monospace;letter-spacing:.02em">
     </div>
 
     <div class="sec">观测设置</div>
