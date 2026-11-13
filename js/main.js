@@ -962,7 +962,7 @@
       ctx.beginPath(); ctx.arc(px, py, 1.6, 0, Math.PI * 2); ctx.stroke();
       if (state.show.labels) {
         ctx.fillStyle = i === 0 ? '#fff' : 'rgba(255,232,190,0.75)';
-        ctx.font = '9px "SF Mono",Menlo,monospace';
+        ctx.font = '9px "Times New Roman",Times,serif';
         ctx.fillText(offs[i].id, px + 4, py - 3);
       }
     }
@@ -971,7 +971,7 @@
     ctx.strokeStyle = 'rgba(170,200,220,0.6)';
     ctx.beginPath(); ctx.moveTo(8, H - 12); ctx.lineTo(8 + 5 * scale, H - 12); ctx.stroke();
     ctx.fillStyle = 'rgba(190,215,235,0.75)';
-    ctx.font = '10px "SF Mono",Menlo,monospace';
+    ctx.font = '10px "Times New Roman",Times,serif';
     ctx.fillText("5'", 10, H - 16);
     ctx.fillText('ΔRA·cosδ →', W - 80, 13);
     ctx.fillText('↑ Δδ', 5, 19);
@@ -1066,7 +1066,7 @@
 
     // 标注
     ctx.fillStyle = 'rgba(190,215,235,0.7)';
-    ctx.font = '9px "SF Mono",Menlo,monospace';
+    ctx.font = '9px "Times New Roman",Times,serif';
     ctx.fillText('0', 6, pad.t + h);
     ctx.fillText('t=0', pad.l + w / 2 - 8, H - 4);
     ctx.fillText('±' + T + ' s', pad.l + w - 22, H - 4);
@@ -1311,11 +1311,9 @@
     var panel = document.getElementById('panel');
     var pw = panel ? panel.getBoundingClientRect().right : 0;
     var W = window.innerWidth || 1;
-    // 要把内容右移 pw/2 像素（NDC 为 s = pw/W）：x_ndc = m00·x/(-z) − m02
-    // 同时把水平尺度乘 (1−s)，否则右移后右侧会被裁掉
-    var s2 = pw / W;
-    camera.projectionMatrix.elements[0] *= (1 - s2);
-    camera.projectionMatrix.elements[8] = -s2;
+    // 纯平移：x_ndc = m00·x/(-z) − m02。只改 m02，**不动 m00**，
+    // 否则水平方向被单独缩放，圆会变成椭圆。
+    camera.projectionMatrix.elements[8] = -pw / W;
     camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
   }
 

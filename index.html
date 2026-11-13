@@ -11,7 +11,8 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
-    font-family:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    font-family:"Times New Roman",Times,-apple-system,"PingFang SC",
+      "Helvetica Neue",Arial,sans-serif;
     overflow:hidden;-webkit-font-smoothing:antialiased}
   canvas#gl{display:block;position:fixed;inset:0}
 
@@ -42,7 +43,7 @@
   .sec:first-of-type{border-top:none}
   .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:7px 0}
   .row label{color:var(--dim);font-size:13px;letter-spacing:.02em;white-space:nowrap}
-  .row .val{font-family:"SF Mono",Menlo,monospace;font-size:12px;color:var(--txt);
+  .row .val{font-family:"Times New Roman",Times,serif;font-size:12px;color:var(--txt);
     min-width:70px;text-align:right}
   input[type=range]{-webkit-appearance:none;width:100%;height:20px;background:transparent;
     margin:2px 0 6px}
@@ -52,7 +53,7 @@
     border-radius:50%;background:var(--accent);margin-top:-4.5px;cursor:pointer;
     box-shadow:0 0 6px rgba(255,201,102,.6)}
   button{background:rgba(255,255,255,.05);color:var(--txt);border:1px solid var(--line);
-    border-radius:8px;padding:6px 9px;font-size:12.5px;cursor:pointer;font-family:inherit;
+    border-radius:8px;padding:7px 10px;font-size:14.5px;cursor:pointer;font-family:inherit;
     transition:.15s}
   button:hover{background:rgba(255,255,255,.1);border-color:rgba(120,170,200,.4)}
   button.active{background:rgba(255,201,102,.16);border-color:rgba(255,201,102,.5);
@@ -62,7 +63,7 @@
   .chk{display:flex;align-items:center;gap:7px;color:var(--dim);font-size:13px;
     cursor:pointer;padding:3.5px 0}
   .chk input{accent-color:#35d0c8;width:13px;height:13px}
-  .cnt{color:#5e7c93;font-size:11px;font-family:"SF Mono",Menlo,monospace;
+  .cnt{color:#5e7c93;font-size:11px;font-family:"Times New Roman",Times,serif;
     margin-left:auto;padding-right:2px}
   .chk.wide{grid-column:1/-1}
   .chk .lbl{white-space:nowrap}
@@ -71,11 +72,11 @@
   /* ---------- 底部 HUD ---------- */
   #hud{position:fixed;left:396px;bottom:14px;z-index:9;
     background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:10px 14px;font-size:11.5px;backdrop-filter:blur(14px);
-    display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 700px)}
-  #hud .k{color:var(--dim);font-size:9.5px;letter-spacing:.4px;display:block}
+    padding:8px 12px;font-size:11.5px;backdrop-filter:blur(14px);
+    display:flex;gap:9px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 672px)}
+  #hud .k{color:var(--dim);font-size:9px;letter-spacing:.3px;display:block}
   #hud .segwrap .k{display:inline}
-  #hud .v{font-family:"SF Mono",Menlo,monospace;font-size:12.5px;color:var(--txt)}
+  #hud .v{font-family:"Times New Roman",Times,serif;font-size:12px;color:var(--txt)}
   .badge{padding:3px 8px;border-radius:20px;font-size:10.5px;border:1px solid}
   .badge.ok{color:#7ee6a8;border-color:rgba(126,230,168,.4);background:rgba(126,230,168,.08)}
   .badge.bad{color:#ff9a76;border-color:rgba(255,154,118,.4);background:rgba(255,154,118,.08)}
@@ -85,11 +86,11 @@
   .seg{display:flex;border:1px solid rgba(120,170,200,.22);border-radius:20px;overflow:hidden}
   .seg button{background:transparent;border:none;color:#7f97a9;font-size:11px;
     padding:4px 9px;cursor:pointer;font-family:inherit;transition:.15s;border-radius:0;
-    font-family:"SF Mono",Menlo,monospace}
+    font-family:"Times New Roman",Times,serif}
   .seg button + button{border-left:1px solid rgba(120,170,200,.18)}
   .seg button:hover{background:rgba(255,255,255,.06);color:#cfe0ee}
   .seg button.active{background:rgba(255,201,102,.18);color:#ffd98f;font-weight:600}
-  .segcur{font-family:"SF Mono",Menlo,monospace;font-size:11px;color:#7f97a9}
+  .segcur{font-family:"Times New Roman",Times,serif;font-size:11px;color:#7f97a9}
 
   /* ---------- 寻星图 ---------- */
   #finderWrap{position:fixed;right:14px;bottom:14px;z-index:9;
@@ -113,7 +114,7 @@
   #aboutBtn{position:fixed;right:14px;top:14px;z-index:11;
     font-size:17.25px;padding:8px 15px;line-height:1.1}
   #about.show ~ #aboutBtn{display:none}
-  .kbd{font-family:"SF Mono",Menlo,monospace;background:rgba(255,255,255,.08);
+  .kbd{font-family:"Times New Roman",Times,serif;background:rgba(255,255,255,.08);
     padding:1px 4px;border-radius:3px;font-size:10px}
   @media(max-width:1180px){
     #finderWrap{display:none}
@@ -146,7 +147,7 @@
         placeholder="YYYY-MM-DD HH:MM:SS" title="UTC 时间，格式 YYYY-MM-DD HH:MM:SS"
         style="background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt);
         border-radius:6px;padding:4px 7px;font-size:12px;width:176px;
-        font-family:'SF Mono',Menlo,monospace;letter-spacing:.02em">
+        font-family:'Times New Roman',Times,serif;letter-spacing:.02em">
     </div>
 
     <div class="sec">观测设置</div>
@@ -200,10 +201,10 @@
 <div id="hud">
   <div><span class="k">UTC</span><span class="v" id="hudUTC">—</span></div>
   <div><span class="k">LST</span><span class="v" id="hudLST">—</span></div>
-  <div><span class="k">观测赤纬</span><span class="v" id="hudDec">—</span></div>
+  <div><span class="k">赤纬</span><span class="v" id="hudDec">—</span></div>
   <div><span class="k">天顶角</span><span class="v" id="hudZA">—</span></div>
   <div><span class="k">方位角</span><span class="v" id="hudAz">—</span></div>
-  <div><span class="k">M01 赤经</span><span class="v" id="hudRA">—</span></div>
+  <div><span class="k">赤经</span><span class="v" id="hudRA">—</span></div>
   <div><span class="k">效率</span><span class="v" id="hudEta">—</span></div>
   <div><span class="k">增益</span><span class="v" id="hudGain">—</span></div>
   <div><span class="k">视场</span><span class="v" id="hudFov">—</span></div>
